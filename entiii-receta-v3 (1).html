@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>entiii — receta médica</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --negro: #0f0f0f;
+  --beige: #EDE8DC;
+  --beige-oscuro: #D8D0BC;
+  --naranja: #F5A623;
+  --verde-claro: #D4E6A5;
+  --verde-medio: #7BA05B;
+  --verde-oscuro: #2D4A2D;
+  --blanco: #FAFAF7;
+  --gris-suave: #F2EEE6;
+  --texto-muted: #7a7a6e;
+  --borde: #d4cfc4;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "DM Sans", sans-serif; background: var(--negro); color: var(--negro); min-height: 100vh; }
+
+nav {
+  background: var(--negro);
+  padding: 1.2rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #222;
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { font-size: 1.5rem; font-weight: 300; color: var(--beige); letter-spacing: -0.02em; }
+.nav-logo b { font-weight: 600; color: var(--naranja); }
+.nav-badge { font-size: 0.65rem; font-weight: 500; color: var(--verde-claro); background: var(--verde-oscuro); padding: 4px 12px; border-radius: 20px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.app { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 58px); }
+
+.form-panel { background: var(--blanco); padding: 2rem 2rem 3rem; overflow-y: auto; border-right: 1px solid var(--borde); }
+.section { margin-bottom: 1.75rem; }
+.section-title { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-muted); margin-bottom: 0.9rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--borde); }
+.field { margin-bottom: 0.85rem; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.65rem; }
+label { display: block; font-size: 0.75rem; font-weight: 500; color: var(--negro); margin-bottom: 0.3rem; }
+input, select, textarea {
+  width: 100%; padding: 0.6rem 0.8rem;
+  border: 1px solid var(--borde); border-radius: 8px;
+  font-family: "DM Sans", sans-serif; font-size: 0.86rem;
+  background: var(--blanco); color: var(--negro);
+  transition: border-color 0.15s; outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--verde-medio); box-shadow: 0 0 0 3px rgba(123,160,91,0.12); }
+
+.link-wrap { position: relative; }
+.link-wrap input { padding-right: 2.2rem; font-size: 0.8rem; background: #f9f8f5; color: var(--texto-muted); }
+.link-indicator { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; transition: all 0.2s; }
+
+.autocomplete-wrap { position: relative; }
+.ac-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--blanco); border: 1px solid var(--borde);
+  border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200; max-height: 220px; overflow-y: auto; display: none;
+}
+.ac-dropdown.open { display: block; }
+.ac-item { padding: 0.6rem 0.85rem; cursor: pointer; border-bottom: 1px solid var(--borde); transition: background 0.1s; }
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover, .ac-item.active { background: var(--gris-suave); }
+.ac-name { font-size: 0.83rem; font-weight: 500; color: var(--negro); }
+.ac-sub { font-size: 0.72rem; color: var(--texto-muted); margin-top: 1px; }
+.ac-empty { padding: 0.75rem; font-size: 0.82rem; color: var(--texto-muted); text-align: center; }
+
+.sup-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.sup-card { background: var(--gris-suave); border: 1px solid var(--borde); border-radius: 10px; padding: 1rem; position: relative; }
+.sup-num { font-size: 0.62rem; font-weight: 600; color: var(--verde-medio); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.btn-remove { position: absolute; top: 0.7rem; right: 0.7rem; background: none; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-muted); font-size: 0.72rem; cursor: pointer; padding: 2px 8px; font-family: "DM Sans", sans-serif; transition: all 0.15s; }
+.btn-remove:hover { border-color: #c0392b; color: #c0392b; }
+
+.btn-add { width: 100%; padding: 0.65rem; background: var(--negro); color: var(--beige); border: none; border-radius: 8px; font-family: "DM Sans", sans-serif; font-size: 0.84rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+.btn-add:hover { background: #222; }
+.btn-generar { width: 100%; padding: 0.85rem; background: var(--naranja); color: var(--negro); border: none; border-radius: 10px; font-family: "DM Sans", sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-top: 0.5rem; }
+.btn-generar:hover { background: #e6951a; transform: translateY(-1px); }
+
+.preview-panel { background: var(--gris-suave); padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+.preview-label { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-muted); }
+
+.receta-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; }
+.receta-header { background: var(--negro); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }
+.receta-brand { font-size: 1.25rem; font-weight: 300; color: var(--beige); letter-spacing: -0.02em; }
+.receta-brand b { color: var(--naranja); font-weight: 600; }
+.receta-meta { text-align: right; font-size: 0.68rem; color: #777; line-height: 1.7; }
+.receta-body { padding: 1.25rem 1.5rem; }
+.r-section { margin-bottom: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--borde); }
+.r-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.r-title { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--verde-medio); margin-bottom: 0.5rem; }
+.r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem 1rem; }
+.r-item { font-size: 0.82rem; color: var(--negro); }
+.r-item span { color: var(--texto-muted); font-size: 0.7rem; display: block; }
+.pac-nombre { font-size: 1.15rem; font-weight: 500; color: var(--negro); }
+.pac-edad { font-size: 0.78rem; color: var(--texto-muted); margin-top: 2px; }
+.sup-row { background: var(--gris-suave); border: 1px solid var(--borde); border-radius: 9px; padding: 0.8rem 1rem; margin-bottom: 0.65rem; }
+.sup-row:last-child { margin-bottom: 0; }
+.sup-nombre-r { font-size: 0.88rem; font-weight: 600; color: var(--negro); }
+.sup-nombre-r a { color: var(--verde-oscuro); text-decoration: none; border-bottom: 1px solid var(--verde-medio); }
+.sup-nombre-r a:hover { color: var(--verde-medio); }
+.pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.pill { font-size: 0.68rem; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.p-dosis { background: #e8f5e2; color: var(--verde-oscuro); }
+.p-freq  { background: #fff3e0; color: #7a4500; }
+.p-dur   { background: #e8eaf6; color: #303f9f; }
+.notas-box { font-size: 0.8rem; color: var(--negro); line-height: 1.6; font-style: italic; background: #fffbe6; border-left: 3px solid var(--naranja); padding: 0.55rem 0.8rem; border-radius: 0 6px 6px 0; }
+.receta-footer { background: var(--beige); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #6b6055; }
+.receta-footer strong { color: var(--negro); }
+
+.share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+.btn-share { padding: 0.7rem 1rem; border-radius: 9px; font-family: "DM Sans", sans-serif; font-size: 0.83rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.btn-wa   { background: #25D366; color: #fff; }
+.btn-wa:hover { background: #1da851; }
+.btn-mail { background: var(--negro); color: var(--beige); }
+.btn-mail:hover { background: #222; }
+.btn-copy { background: var(--beige); color: var(--negro); border: 1px solid var(--borde); }
+.btn-copy:hover { background: var(--beige-oscuro); }
+.btn-print { background: var(--verde-oscuro); color: var(--verde-claro); }
+.btn-print:hover { background: #1e3a1e; }
+
+.empty { text-align: center; padding: 3rem 1.5rem; color: var(--texto-muted); }
+.empty-icon { font-size: 2.2rem; margin-bottom: 0.75rem; opacity: 0.35; }
+.empty p { font-size: 0.85rem; line-height: 1.65; }
+
+.toast { position: fixed; bottom: 1.75rem; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--negro); color: var(--beige); padding: 0.65rem 1.4rem; border-radius: 50px; font-size: 0.83rem; font-weight: 500; z-index: 9999; transition: transform 0.28s ease; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .preview-panel { border-top: 1px solid var(--borde); }
+}
+@media print {
+  nav, .form-panel, .share-grid, .preview-label { display: none !important; }
+  body { background: white; }
+  .preview-panel { padding: 0; background: white; }
+  .receta-card { border: none; }
+  .app { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">enti<b>iii</b></div>
+  <div class="nav-badge">Receta Médica</div>
+</nav>
+
+<div class="app">
+  <div class="form-panel">
+    <div class="section">
+      <div class="section-title">Datos del médico</div>
+      <div class="field">
+        <label>Nombre completo</label>
+        <input type="text" id="doc-nombre" placeholder="Dr. / Dra. Nombre Apellido">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Cédula profesional</label>
+          <input type="text" id="doc-cedula" placeholder="1234567">
+        </div>
+        <div class="field">
+          <label>Especialidad</label>
+          <input type="text" id="doc-esp" placeholder="Nutriología…">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Datos del paciente</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nombre completo</label>
+          <input type="text" id="pac-nombre" placeholder="Nombre del paciente">
+        </div>
+        <div class="field">
+          <label>Edad</label>
+          <input type="text" id="pac-edad" placeholder="32 años">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Suplementos prescritos</div>
+      <div class="sup-list" id="sup-container"></div>
+      <br>
+      <button class="btn-add" onclick="addSup()">+ Agregar suplemento</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Notas adicionales</div>
+      <textarea id="notas" rows="3" placeholder="Instrucciones especiales, advertencias…"></textarea>
+    </div>
+
+    <button class="btn-generar" onclick="generar()">Generar receta</button>
+  </div>
+
+  <div class="preview-panel">
+    <div class="preview-label">Vista previa</div>
+    <div id="receta-output">
+      <div class="empty">
+        <div class="empty-icon">📋</div>
+        <p>Completa el formulario y presiona<br><strong>Generar receta</strong>.</p>
+      </div>
+    </div>
+    <div class="share-grid" id="share-btns" style="display:none;">
+      <button class="btn-share btn-wa" onclick="shareWA()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn-share btn-mail" onclick="shareEmail()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        Correo
+      </button>
+      <button class="btn-share btn-copy" onclick="copiarTexto()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar texto
+      </button>
+      <button class="btn-share btn-print" onclick="window.print()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
+const WEBHOOK_URL = 'https://entiii.app.n8n.cloud/webhook/entiii-catalogo';
+
+// ─── CATÁLOGO ─────────────────────────────────────────────────────────────────
+let CATALOGO = [];
+let CATALOGO_BY_URL = {};
+
+function fixEncoding(str) {
+  if (!str) return '';
+  try {
+    return decodeURIComponent(escape(str));
+  } catch(e) {
+    return str;
+  }
+}
+
+function buildUrlMap() {
+  CATALOGO_BY_URL = {};
+  CATALOGO.forEach(p => {
+    if (!p.url) return;
+    CATALOGO_BY_URL[p.url.toLowerCase().trim()] = p;
+    const m = p.url.match(/\/products\/([^/?#]+)/);
+    if (m) CATALOGO_BY_URL[m[1].toLowerCase()] = p;
+  });
+}
+
+async function cargarCatalogo() {
+  try {
+    const res = await fetch(WEBHOOK_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const arr = Array.isArray(data) ? data
+               : Array.isArray(data.products) ? data.products
+               : Array.isArray(data.data) ? data.data : null;
+    if (!arr || !arr.length) throw new Error('Sin datos');
+
+    // Arreglar encoding en títulos y dosis
+    CATALOGO = arr.map(p => ({
+      ...p,
+      title:  fixEncoding(p.title),
+      vendor: fixEncoding(p.vendor),
+      dosis:  fixEncoding(p.dosis),
+    }));
+    buildUrlMap();
+  } catch(e) {
+    console.warn('No se pudo cargar catálogo desde n8n:', e.message);
+  }
+}
+
+// Cargar catálogo al arrancar
+cargarCatalogo();
+
+// ─── LOOKUP POR LINK ──────────────────────────────────────────────────────────
+function resolveUrl(rawUrl) {
+  if (!rawUrl) return null;
+  const clean = rawUrl.toLowerCase().trim().replace(/\/$/, '');
+  if (CATALOGO_BY_URL[clean]) return CATALOGO_BY_URL[clean];
+  const m = clean.match(/\/products\/([^/?#]+)/);
+  if (m && CATALOGO_BY_URL[m[1]]) return CATALOGO_BY_URL[m[1]];
+  const slug = m ? m[1] : clean.split('/').pop();
+  return CATALOGO.find(p => p.url && p.url.toLowerCase().includes(slug)) || null;
+}
+
+function applyProduct(id, prod) {
+  document.getElementById('sn-' + id).value = prod.title;
+  if (prod.dosis) document.getElementById('sd-' + id).value = prod.dosis;
+  const li = document.getElementById('li-' + id);
+  if (li) { li.textContent = '✓'; li.style.color = 'var(--verde-medio)'; }
+  const inp = document.getElementById('sl-' + id);
+  if (inp) inp.style.borderColor = 'var(--verde-medio)';
+}
+
+function clearLinkIndicator(id) {
+  const li = document.getElementById('li-' + id);
+  const inp = document.getElementById('sl-' + id);
+  if (li) li.textContent = '';
+  if (inp) inp.style.borderColor = '';
+}
+
+function onLinkInput(id) {
+  const val = document.getElementById('sl-' + id).value.trim();
+  clearLinkIndicator(id);
+  if (!val || (!val.includes('entiii.com') && !val.includes('/products/'))) return;
+  const prod = resolveUrl(val);
+  if (prod) applyProduct(id, prod);
+  else {
+    const li = document.getElementById('li-' + id);
+    if (li) { li.textContent = '?'; li.style.color = 'var(--texto-muted)'; }
+  }
+}
+
+function onLinkPaste(e, id) {
+  const pasted = (e.clipboardData || window.clipboardData).getData('text').trim();
+  if (!pasted) return;
+  setTimeout(() => {
+    const prod = resolveUrl(pasted);
+    if (prod) {
+      document.getElementById('sl-' + id).value = prod.url || pasted;
+      applyProduct(id, prod);
+      toast('✓ ' + prod.title.substring(0, 45) + (prod.title.length > 45 ? '…' : ''));
+    }
+  }, 30);
+}
+
+// ─── SUPLEMENTOS ──────────────────────────────────────────────────────────────
+let supCount = 0;
+let recetaData = null;
+
+function addSup() {
+  supCount++;
+  const id = supCount;
+  const el = document.createElement('div');
+  el.className = 'sup-card';
+  el.id = 'sc-' + id;
+  el.innerHTML = `
+    <div class="sup-num">Suplemento ${id}</div>
+    <button class="btn-remove" onclick="removeSup(${id})">Eliminar</button>
+    <div class="field">
+      <label>Buscar suplemento</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="sn-${id}" placeholder="Escribe el nombre…" autocomplete="off"
+          oninput="buscar(${id})" onkeydown="navAC(event,${id})">
+        <div class="ac-dropdown" id="ac-${id}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Link del producto <span style="font-weight:400;color:var(--texto-muted)">(también puedes pegar la URL)</span></label>
+      <div class="link-wrap">
+        <input type="url" id="sl-${id}" placeholder="https://entiii.com/products/…"
+          oninput="onLinkInput(${id})" onpaste="onLinkPaste(event,${id})">
+        <span class="link-indicator" id="li-${id}"></span>
+      </div>
+    </div>
+    <div class="field-row-3">
+      <div class="field"><label>Dosis</label><input type="text" id="sd-${id}" placeholder="400 mg"></div>
+      <div class="field"><label>Frecuencia</label><input type="text" id="sf-${id}" placeholder="1 vez al día"></div>
+      <div class="field"><label>Duración</label><input type="text" id="sdu-${id}" placeholder="3 meses"></div>
+    </div>
+  `;
+  document.getElementById('sup-container').appendChild(el);
+}
+
+function removeSup(id) {
+  const el = document.getElementById('sc-' + id);
+  if (el) el.remove();
+}
+
+// ─── AUTOCOMPLETADO ───────────────────────────────────────────────────────────
+let acIdx = {};
+
+function buscar(id) {
+  const q = document.getElementById('sn-' + id).value.trim().toLowerCase();
+  const dd = document.getElementById('ac-' + id);
+  acIdx[id] = -1;
+  clearLinkIndicator(id);
+  if (q.length < 2) { dd.innerHTML = ''; dd.classList.remove('open'); return; }
+
+  const words = q.split(/\s+/);
+  const matches = CATALOGO.filter(p => {
+    const hay = (p.title + ' ' + p.vendor).toLowerCase();
+    return words.every(w => hay.includes(w));
+  }).slice(0, 8);
+
+  if (!matches.length) {
+    dd.innerHTML = '<div class="ac-empty">Sin resultados</div>';
+  } else {
+    dd.innerHTML = matches.map((p, i) =>
+      `<div class="ac-item" data-i="${i}"
+        onmousedown="seleccionarProd(${id},${i})"
+        onmouseover="acIdx['${id}']=${i};resaltarAC(${id})">
+        <div class="ac-name">${p.title}</div>
+        <div class="ac-sub">${p.vendor}${p.dosis ? ' · ' + p.dosis : ''}${p.price ? ' · $' + parseFloat(p.price).toFixed(0) : ''}</div>
+      </div>`
+    ).join('');
+    dd._matches = matches;
+  }
+  dd.classList.add('open');
+}
+
+function resaltarAC(id) {
+  document.getElementById('ac-' + id).querySelectorAll('.ac-item')
+    .forEach((el, i) => el.classList.toggle('active', i === acIdx[id]));
+}
+
+function navAC(e, id) {
+  const dd = document.getElementById('ac-' + id);
+  if (!dd.classList.contains('open')) return;
+  const items = dd.querySelectorAll('.ac-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') { acIdx[id] = Math.min((acIdx[id]||0)+1, items.length-1); resaltarAC(id); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { acIdx[id] = Math.max((acIdx[id]||0)-1, 0); resaltarAC(id); e.preventDefault(); }
+  else if (e.key === 'Enter' && acIdx[id] >= 0) { seleccionarProd(id, acIdx[id]); e.preventDefault(); }
+  else if (e.key === 'Escape') { dd.classList.remove('open'); }
+}
+
+function seleccionarProd(id, idx) {
+  const dd = document.getElementById('ac-' + id);
+  const prod = dd._matches[idx];
+  if (!prod) return;
+  document.getElementById('sn-' + id).value = prod.title;
+  document.getElementById('sl-' + id).value = prod.url || '';
+  if (prod.dosis) document.getElementById('sd-' + id).value = prod.dosis;
+  dd.classList.remove('open');
+  applyProduct(id, prod);
+}
+
+document.addEventListener('click', e => {
+  document.querySelectorAll('.ac-dropdown.open').forEach(dd => {
+    if (!dd.parentElement.contains(e.target)) dd.classList.remove('open');
+  });
+});
+
+// ─── GENERAR ──────────────────────────────────────────────────────────────────
+function generar() {
+  const dn = document.getElementById('doc-nombre').value.trim();
+  const pn = document.getElementById('pac-nombre').value.trim();
+  if (!dn || !pn) { toast('Ingresa el nombre del médico y del paciente.'); return; }
+
+  const sups = [];
+  document.querySelectorAll('.sup-card').forEach(card => {
+    const m = card.id.match(/sc-(\d+)/);
+    if (!m) return;
+    const i = m[1];
+    const nombre = document.getElementById('sn-' + i)?.value.trim();
+    if (!nombre) return;
+    sups.push({
+      nombre,
+      link:  document.getElementById('sl-' + i)?.value.trim(),
+      dosis: document.getElementById('sd-' + i)?.value.trim(),
+      freq:  document.getElementById('sf-' + i)?.value.trim(),
+      dur:   document.getElementById('sdu-'+ i)?.value.trim(),
+    });
+  });
+
+  const fecha = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+  const folio = 'ENT-' + Math.random().toString(36).substring(2,7).toUpperCase();
+
+  recetaData = {
+    dn, dc: document.getElementById('doc-cedula').value.trim(),
+    de: document.getElementById('doc-esp').value.trim(),
+    pn, pe: document.getElementById('pac-edad').value.trim(),
+    notas: document.getElementById('notas').value.trim(),
+    sups, fecha, folio
+  };
+
+  renderReceta(recetaData);
+  document.getElementById('share-btns').style.display = 'grid';
+  toast('¡Receta generada!');
+}
+
+function renderReceta(d) {
+  const supsHTML = d.sups.length === 0
+    ? '<p style="font-size:.82rem;color:var(--texto-muted);font-style:italic;">Sin suplementos prescritos.</p>'
+    : d.sups.map(s => `
+      <div class="sup-row">
+        <div class="sup-nombre-r">${s.link ? `<a href="${s.link}" target="_blank">${s.nombre}</a>` : s.nombre}</div>
+        <div class="pills">
+          ${s.dosis ? `<span class="pill p-dosis">${s.dosis}</span>` : ''}
+          ${s.freq  ? `<span class="pill p-freq">${s.freq}</span>`   : ''}
+          ${s.dur   ? `<span class="pill p-dur">${s.dur}</span>`     : ''}
+        </div>
+      </div>`).join('');
+
+  const notasHTML = d.notas
+    ? `<div class="r-section"><div class="r-title">Notas del médico</div><div class="notas-box">${d.notas}</div></div>`
+    : '';
+
+  document.getElementById('receta-output').innerHTML = `
+    <div class="receta-card">
+      <div class="receta-header">
+        <div class="receta-brand">enti<b>iii</b></div>
+        <div class="receta-meta">${d.folio}<br>${d.fecha}</div>
+      </div>
+      <div class="receta-body">
+        <div class="r-section">
+          <div class="r-title">Médico prescriptor</div>
+          <div class="r-grid">
+            <div class="r-item">${d.dn}<span>Nombre</span></div>
+            ${d.dc ? `<div class="r-item">${d.dc}<span>Cédula</span></div>` : ''}
+            ${d.de ? `<div class="r-item">${d.de}<span>Especialidad</span></div>` : ''}
+          </div>
+        </div>
+        <div class="r-section">
+          <div class="r-title">Paciente</div>
+          <div class="pac-nombre">${d.pn}</div>
+          ${d.pe ? `<div class="pac-edad">${d.pe}</div>` : ''}
+        </div>
+        <div class="r-section">
+          <div class="r-title">Suplementos prescritos</div>
+          ${supsHTML}
+        </div>
+        ${notasHTML}
+      </div>
+      <div class="receta-footer">
+        <span>Prescrito por <strong>${d.dn}</strong></span>
+        <span>entiii.com</span>
+      </div>
+    </div>`;
+}
+
+function textoPlano(d) {
+  let t = `🌿 *Receta entiii* — ${d.folio}\n📅 ${d.fecha}\n\n`;
+  t += `👨‍⚕️ *Médico:* ${d.dn}`;
+  if (d.dc) t += ` | Cédula: ${d.dc}`;
+  if (d.de) t += ` | ${d.de}`;
+  t += `\n\n👤 *Paciente:* ${d.pn}`;
+  if (d.pe) t += ` (${d.pe})`;
+  if (d.sups.length) {
+    t += `\n\n💊 *Suplementos:*`;
+    d.sups.forEach((s,i) => {
+      t += `\n\n${i+1}. *${s.nombre}*`;
+      if (s.dosis) t += `\n   Dosis: ${s.dosis}`;
+      if (s.freq)  t += `\n   Frecuencia: ${s.freq}`;
+      if (s.dur)   t += `\n   Duración: ${s.dur}`;
+      if (s.link)  t += `\n   🔗 ${s.link}`;
+    });
+  }
+  if (d.notas) t += `\n\n📝 *Notas:* ${d.notas}`;
+  t += `\n\n_entiii.com — suplementos con respaldo médico_`;
+  return t;
+}
+
+function shareWA() {
+  if (!recetaData) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(textoPlano(recetaData)), '_blank');
+}
+function shareEmail() {
+  if (!recetaData) return;
+  const asunto = `Tu receta entiii — ${recetaData.folio}`;
+  const cuerpo = textoPlano(recetaData).replace(/\*/g,'');
+  window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+}
+function copiarTexto() {
+  if (!recetaData) return;
+  navigator.clipboard.writeText(textoPlano(recetaData).replace(/\*/g,'')).then(() => toast('Texto copiado ✓'));
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+addSup();
+</script>
+</body>
+</html>
